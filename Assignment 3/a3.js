@@ -25,16 +25,21 @@ let validateEmail = () => {
     let email = prompt("Enter email");
     email.trim();
 
-    // indexOf('') => rightmost | lastIndexOf('') => leftmost
+    // indexOf('') => leftmost | lastIndexOf('') => rightmost
     let leftAtIndex = email.indexOf('@');
     let rightAtIndex = email.lastIndexOf('@');
     let leftDotIndex = email.indexOf('.');
     let rightDotIndex = email.lastIndexOf('.');
     
-    if(leftAtIndex == rightAtIndex){
-        if(leftDotIndex == rightDotIndex){
-            if(leftAtIndex < leftDotIndex){
-                setContent("placeEmail", `${email} is a valid email.`);
+    
+    if(leftAtIndex != 0 && leftAtIndex != -1){
+        if(leftAtIndex == rightAtIndex){
+            if(leftDotIndex == rightDotIndex){
+                if(leftAtIndex < leftDotIndex){
+                    setContent("placeEmail", `${email} is a valid email.`);
+                }else{
+                    setContent("placeEmail", `${email} is a not a valid email.`);
+                }
             }else{
                 setContent("placeEmail", `${email} is a not a valid email.`);
             }
@@ -44,4 +49,6 @@ let validateEmail = () => {
     }else{
         setContent("placeEmail", `${email} is a not a valid email.`);
     }
+
+    
 }
