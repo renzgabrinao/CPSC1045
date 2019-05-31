@@ -44,5 +44,4 @@ let validateEmail = () => {
     }else{
         setContent("placeEmail", `${email} is a not a valid email.`);
     }
-
 }
