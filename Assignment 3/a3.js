@@ -18,6 +18,11 @@ let askHours = () => {
     }
 }
 
+
+let errorMsg = (email) => {
+    setContent("placeEmail", `${email} is a not a valid email.`);
+}
+
 /* validate email:
         must be in form of a@b.c
 */
@@ -31,24 +36,25 @@ let validateEmail = () => {
     let leftDotIndex = email.indexOf('.');
     let rightDotIndex = email.lastIndexOf('.');
     
-    
-    if(leftAtIndex != 0 && leftAtIndex != -1){
-        if(leftAtIndex == rightAtIndex){
-            if(leftDotIndex == rightDotIndex){
-                if(leftAtIndex < leftDotIndex){
-                    setContent("placeEmail", `${email} is a valid email.`);
-                }else{
-                    setContent("placeEmail", `${email} is a not a valid email.`);
-                }
-            }else{
-                setContent("placeEmail", `${email} is a not a valid email.`);
-            }
-        }else{
-            setContent("placeEmail", `${email} is a not a valid email.`);
-        }
-    }else{
-        setContent("placeEmail", `${email} is a not a valid email.`);
+    if(leftAtIndex === 0 || leftAtIndex === -1) {
+        errorMsg(email);
+        return;
     }
 
+    if(leftAtIndex !== rightAtIndex){
+        errorMsg(email);
+        return;
+    }
+
+    if(leftDotIndex !== rightDotIndex){
+        errorMsg(email);
+        return;
+    }
     
+    if(leftAtIndex > leftDotIndex){
+        errorMsg(email);
+        return;
+    }
+
+    setContent("placeEmail", `${email} is a valid email.`);
 }
