@@ -1,9 +1,11 @@
 "use strict";
 let ctx;
 let canvas;
+
 let arraySize = 9;
 let gameArray = new Array(arraySize);
 const tileHeight = 100;
+
 // canvas dimensions 900 x 900
 let canvasHeight = 900;
 let canvasWidth = 900;
@@ -44,9 +46,9 @@ function startRobot(){
     Create a robot that:
     -Has coordinates,
     -Moves with direction
-        ~Based on the direction, check left
-        ~if theres a wall, turn right, check again
-        ~else, turn left, then move
+        ~based on the direction, check left
+        ~if theres a wall, turn right, check left again
+        ~when left is free, move
 */
 function createRobot(startingDirection, startingCoords){
     return {
@@ -90,7 +92,9 @@ function createRobot(startingDirection, startingCoords){
 
             let frontCoords = { x: xCoord, y: yCoord };
 
-            // loop while there is a wall, when false then move to the free spot
+            //loop while there is a wall, 
+            //face right, then update x,yCoords and frontCoords
+            //when false then move to the free spot
             while(isWall(frontCoords)){
                 this.faceRight();
                 switch(this.direction){
@@ -116,15 +120,21 @@ function createRobot(startingDirection, startingCoords){
         },
 
         forward: function (x, y){
+            // clear previous block
+            drawAi(this.coordinates, "white");
+
             this.coordinates = {
                 x: x,
                 y: y
             };
+
             // draw robot on canvas with updated coords
             if(this.coordinates.x === 8 && this.coordinates.y === 8){
-                alert("You lost!");
-                return false;                   
+                // reload webpage when lost
+                location.reload(true);
+                alert("You lost!");                
             }else{
+                // move and draw ai on page with updated coords
                 drawAi(this.coordinates, "blue");
                 drawLines();
             }
@@ -137,7 +147,10 @@ function isWall(coords){
     let isIndexInbound = function(index){
         return index >= 0 && index < 9;
     }
-    return !isIndexInbound(coords.x) || !isIndexInbound(coords.y) || gameArray[coords.x][coords.y] === "black";
+    return  !isIndexInbound(coords.x) || 
+            !isIndexInbound(coords.y) ||
+            gameArray[coords.x][coords.y] === "grey" ||
+            gameArray[coords.x][coords.y] === "black";
 }
 
 function drawAi(coords, color){
@@ -150,8 +163,8 @@ function drawAi(coords, color){
 }
 
 
-function getOpenTiles(aiCoords){
-    let openTilesArr = [];
+function detectBarriers(aiCoords){
+    let detectBarriers = [];
     let isIndexInbound = function(index){
         return index >= 0 && index < 9;
     }
@@ -160,15 +173,25 @@ function getOpenTiles(aiCoords){
             let xCoord = aiCoords.x + i;
             let yCoord = aiCoords.y + j;
             
-            if(isIndexInbound(xCoord) && isIndexInbound(yCoord) && gameArray[xCoord][yCoord] === "white"){
-                openTilesArr.push({
+            //push all the black blocks in array
+            if( isIndexInbound(xCoord) && isIndexInbound(yCoord) && 
+                gameArray[xCoord][yCoord] === "black"){
+                detectBarriers.push({
+                    x: xCoord,
+                    y: yCoord
+                });
+            }
+            //check grey blocks
+            if( isIndexInbound(xCoord) && isIndexInbound(yCoord) && 
+                gameArray[xCoord][yCoord] === "grey"){
+                detectBarriers.push({
                     x: xCoord,
                     y: yCoord
                 });
             }
         }
     }
-    return openTilesArr;
+    return detectBarriers;
 }
 
 /*-----------------------------------------------------------------------------------*/
@@ -179,12 +202,16 @@ function buildTower(event){
 
     // update gameArray with coordinates from click
     if(gameArray[coords.x][coords.y] === "red"){
-        alert("You can't build there!");    
+        alert("You can't build there!");
+    }else if(gameArray[coords.x][coords.y] === "grey"){
+        alert("You can't build there!");
     }else if(gameArray[coords.x][coords.y] === "white"){
         gameArray[coords.x][coords.y] = "black";
     }else if(gameArray[coords.x][coords.y] === "black"){
         gameArray[coords.x][coords.y] = "white";
     }
+
+    // ADD BLUE AND GREY !!!!
 
     // update board
     for(let i = 0; i < arraySize; i++){
@@ -229,10 +256,30 @@ function setBoard(){
                 gameArray[i][j] = "red";
                 ctx.fillStyle = gameArray[i][j];
                 ctx.fillRect((i*tileHeight), (j*tileHeight), tileHeight, tileHeight);
+            }else if(i === 0 && j === 0){
+                // set start of robot
+                gameArray[i][j] = "blue";
+                ctx.fillStyle = gameArray[i][j];
+                ctx.fillRect((i*tileHeight), (j*tileHeight), tileHeight, tileHeight);
             }else{
                 gameArray[i][j] = "white";
             }
         }
+    }
+    // randomly generate barriers around the map between 1 - 8
+    let randomBarriers = Math.floor((Math.random() * 10) + 1);
+    while(randomBarriers){
+        let randX = Math.floor((Math.random() * 8) + 1);
+        let randY = Math.floor((Math.random() * 8) + 1);
+        if(randX === 8 && randY === 8){
+            randX -= 1;
+            randY -= 1;
+        }
+        gameArray[randX][randY] = "grey";
+        ctx.fillStyle = "grey";
+        ctx.fillRect((randX*tileHeight), (randY*tileHeight), tileHeight, tileHeight);
+        randomBarriers -= 1;
+        console.log(`X at ${randX}, Y at ${randY}`);
     }
     drawLines();
 }
