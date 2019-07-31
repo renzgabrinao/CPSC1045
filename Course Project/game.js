@@ -2,18 +2,21 @@
 let ctx;
 let canvas;
 
-let arraySize = 9;
+let arraySize = 11;
 let gameArray = new Array(arraySize);
 const tileHeight = 100;
+let barriers = randomBarriers(10);
 
-// canvas dimensions 900 x 900
-let canvasHeight = 900;
-let canvasWidth = 900;
+// canvas dimensions 1100 x 1100
+let canvasHeight = 1100;
+let canvasWidth = 1100;
 
 let aiCoords = {
     x: 0,
     y: 0
 }
+
+let aiHealth = 10;
 
 let directions = {
     north: 0,
@@ -26,7 +29,7 @@ function setup(){
     canvas = document.getElementById("myCanvas");
     ctx = canvas.getContext("2d");
     
-    setBoard();
+    setBoard(gameArray);
     
     // click on canvas to fill squares
     canvas.addEventListener("click", function (e){
@@ -35,8 +38,9 @@ function setup(){
 }
 
 /*-------------------------------------AI--------------------------------------------*/
+
 function startRobot(){
-    let robot = createRobot(2, aiCoords);
+    let robot = createRobot(directions.south, aiCoords, aiHealth);
     setInterval(function (){
         robot.move();
     }, 250);
@@ -44,14 +48,16 @@ function startRobot(){
 
 /*  
     Create a robot that:
+    -Has health
     -Has coordinates,
     -Moves with direction
         ~based on the direction, check left
         ~if theres a wall, turn right, check left again
         ~when left is free, move
 */
-function createRobot(startingDirection, startingCoords){
+function createRobot(startingDirection, startingCoords, startingHealth){
     return {
+        hp: startingHealth, 
         direction: startingDirection,
         coordinates: startingCoords,
         faceLeft: function() {
@@ -117,6 +123,15 @@ function createRobot(startingDirection, startingCoords){
                 frontCoords = { x: xCoord, y: yCoord };
             }
             this.forward(frontCoords.x, frontCoords.y);
+            
+            //update health of ai
+            let aiSurrounding = detectBarriers(this.coordinates);
+            for(let i = 0; i < aiSurrounding.length; i++){
+                if(aiSurrounding[i].color === "black"){
+                    this.hp -= 1;
+                }
+            }
+            console.log(`robot health at ${this.hp}`);
         },
 
         forward: function (x, y){
@@ -129,7 +144,11 @@ function createRobot(startingDirection, startingCoords){
             };
 
             // draw robot on canvas with updated coords
-            if(this.coordinates.x === 8 && this.coordinates.y === 8){
+            // if(this.hp < 0){
+            //     setBoard(gameArrayCopy);
+            // }
+
+            if(this.coordinates.x === 10 && this.coordinates.y === 10){
                 // reload webpage when lost
                 location.reload(true);
                 alert("You lost!");                
@@ -145,7 +164,7 @@ function createRobot(startingDirection, startingCoords){
 // check if there is a wall or not
 function isWall(coords){
     let isIndexInbound = function(index){
-        return index >= 0 && index < 9;
+        return index >= 0 && index < 11;
     }
     return  !isIndexInbound(coords.x) || 
             !isIndexInbound(coords.y) ||
@@ -156,7 +175,6 @@ function isWall(coords){
 function drawAi(coords, color){
     gameArray[coords.x][coords.y] = color;
     ctx.save();
-    
     ctx.fillStyle = color;
     ctx.fillRect(coords.x * tileHeight, coords.y * tileHeight, tileHeight, tileHeight);
     ctx.restore();
@@ -166,7 +184,7 @@ function drawAi(coords, color){
 function detectBarriers(aiCoords){
     let detectBarriers = [];
     let isIndexInbound = function(index){
-        return index >= 0 && index < 9;
+        return index >= 0 && index < 11;
     }
     for(let i = -1; i < 2; i++){
         for(let j = -1; j < 2; j++){
@@ -178,7 +196,8 @@ function detectBarriers(aiCoords){
                 gameArray[xCoord][yCoord] === "black"){
                 detectBarriers.push({
                     x: xCoord,
-                    y: yCoord
+                    y: yCoord,
+                    color: "black"
                 });
             }
             //check grey blocks
@@ -186,7 +205,8 @@ function detectBarriers(aiCoords){
                 gameArray[xCoord][yCoord] === "grey"){
                 detectBarriers.push({
                     x: xCoord,
-                    y: yCoord
+                    y: yCoord,
+                    color: "grey"
                 });
             }
         }
@@ -194,7 +214,7 @@ function detectBarriers(aiCoords){
     return detectBarriers;
 }
 
-/*-----------------------------------------------------------------------------------*/
+/*--------------------------------Board Setup------------------------------------*/
 
 function buildTower(event){
     // get mouse coordinates from canvas
@@ -205,13 +225,13 @@ function buildTower(event){
         alert("You can't build there!");
     }else if(gameArray[coords.x][coords.y] === "grey"){
         alert("You can't build there!");
+    }else if(gameArray[coords.x][coords.y] === "blue"){
+        alert("You can't build there!");
     }else if(gameArray[coords.x][coords.y] === "white"){
         gameArray[coords.x][coords.y] = "black";
     }else if(gameArray[coords.x][coords.y] === "black"){
         gameArray[coords.x][coords.y] = "white";
     }
-
-    // ADD BLUE AND GREY !!!!
 
     // update board
     for(let i = 0; i < arraySize; i++){
@@ -237,12 +257,12 @@ function convertToCoords(clientX, clientY){
     let xFloor = Math.floor(clientX/tileHeight);
     let yFloor = Math.floor(clientY/tileHeight);
     return {
-        x: clientX >= 900 ? xFloor - 1 : xFloor, 
-        y: clientY >= 900 ? yFloor - 1 : yFloor
+        x: clientX >= 1100 ? xFloor - 1 : xFloor, 
+        y: clientY >= 1100 ? yFloor - 1 : yFloor
     };
 }
 
-function setBoard(){
+function setBoard(gameArray){
     // set 2d array for gameboard
     for(let i = 0; i < gameArray.length; i++){
         gameArray[i] = new Array(arraySize);
@@ -251,7 +271,7 @@ function setBoard(){
     // set coordinates for 2d array
     for(let i = 0; i < gameArray.length; i++){
         for(let j = 0; j < gameArray.length; j++){
-            if(i === 8 && j === 8){
+            if(i === 10 && j === 10){
                 // set end goal
                 gameArray[i][j] = "red";
                 ctx.fillStyle = gameArray[i][j];
@@ -266,22 +286,43 @@ function setBoard(){
             }
         }
     }
-    // randomly generate barriers around the map between 1 - 8
-    let randomBarriers = Math.floor((Math.random() * 10) + 1);
-    while(randomBarriers){
-        let randX = Math.floor((Math.random() * 8) + 1);
-        let randY = Math.floor((Math.random() * 8) + 1);
-        if(randX === 8 && randY === 8){
+    
+    // randomly generate barriers around the map between 1 - 10
+    drawBarriers(barriers);
+    drawLines();
+}
+
+// returns an array of objects of the barriers
+function randomBarriers(numBarriers){
+    let barrierList = [];
+    while(numBarriers){
+        let randX = Math.floor((Math.random() * gameArray.length-1) + 1);
+        let randY = Math.floor((Math.random() * gameArray.length-1) + 1);
+        if(randX === 0 && randY === 0){
+            randX += 1;
+            randY += 1;
+        };
+        if(randX === 10 && randY === 10){
             randX -= 1;
             randY -= 1;
-        }
-        gameArray[randX][randY] = "grey";
-        ctx.fillStyle = "grey";
-        ctx.fillRect((randX*tileHeight), (randY*tileHeight), tileHeight, tileHeight);
-        randomBarriers -= 1;
-        console.log(`X at ${randX}, Y at ${randY}`);
+        };
+        barrierList.push({
+            x: randX,
+            y: randY,
+            color: "grey"
+        });
+        numBarriers -= 1;
     }
-    drawLines();
+    return barrierList;
+}
+
+// take in an array of objects and draw barriers randomly around the map
+function drawBarriers(barriers){
+    for(let i = 0; i < barriers.length; i++){
+        gameArray[barriers[i].x][barriers[i].y] = barriers[i].color;
+        ctx.fillStyle = barriers[i].color;
+        ctx.fillRect((barriers[i].x*tileHeight), (barriers[i].y*tileHeight), tileHeight, tileHeight);
+    }
 }
 
 function drawLines(){
