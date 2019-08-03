@@ -1,0 +1,28 @@
+Maze Runner
+
+    - Is a Tower Defense game inspired by the Warcraft III mod 'Tropical Tower Wars'
+
+    - Player is given a map of 11 x 11
+    - Barriers are placed randomly around the map
+    - Players can place towers (black blocks) at the free spots (white blocks)
+    - Players will press the start button to start the game
+    - The goal of the enemy is to reach the red block which will give damage to player health
+    - The enemy will gain health and speed after being killed
+
+
+
+
+
+
+bugs/problems not solved
+
+    - The enemy will sometimes move diagonally
+    - The player can block the enemy in its position
+
+other
+
+    - No other libraries are used
+    - CSS is used a little bit to make the button, texts bigger
+    - Recieved help from my brother:
+        - How the enemy ai algorithm works and function
+        - Everything else is made by me

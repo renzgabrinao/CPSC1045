@@ -1,0 +1,27 @@
+#start-btn {
+    margin: 12px 0px;
+    width: 250px;
+    height: 50px;
+    font-size: 25px;
+    color: white;
+    border: 0;
+    background: #000000;
+    box-shadow: none;
+    border-radius: 0px;
+}
+
+#health-css {
+    font-size: 30px;
+}
+
+#playerHealth-css {
+    font-size: 30px;
+}
+
+#enemy-css {
+    font-size: 30px;
+}
+
+#enemyHealth-css {
+    font-size: 30px;
+}
