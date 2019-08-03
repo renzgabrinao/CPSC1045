@@ -4,11 +4,24 @@
    <meta charset="utf-8">
    <title>Maze Hunter</title>
    <script src="game.js" type="text/javascript"></script>
-	 
+   <link rel="stylesheet" type="text/css" href="game.css">
 </head>
 <body onload="setup()">
+    
     <canvas id="myCanvas" height="1100" width="1100" style="border: 1px solid black"></canvas>
-    <button onclick="startRobot()">Start</button>
+    <br>
+    <button id="start-btn" onclick="startRobot()">Start</button>
+    
+    <div id="health-css">Player Health</div>
+    <div id="playerHealth-css">
+        <div id="playerHealth">.</div>
+    </div>
+
+    <div id="enemy-css">Enemy Health</div>
+    <div id="enemyHealth-css">
+        <div id="enemyHealth">.</div>
+    </div>
+
 </body>
 
 </html>

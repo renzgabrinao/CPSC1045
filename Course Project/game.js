@@ -16,7 +16,10 @@ let aiCoords = {
     y: 0
 }
 
-let aiHealth = 10;
+let aiSpeed = 1000;
+let aiHealth = 25;
+let aiDamage = 1;
+let playerHealth = 5;
 
 let directions = {
     north: 0,
@@ -42,8 +45,8 @@ function setup(){
 function startRobot(){
     let robot = createRobot(directions.south, aiCoords, aiHealth);
     setInterval(function (){
-        robot.move();
-    }, 250);
+        robot.move();        
+    }, aiSpeed);
 }
 
 /*  
@@ -128,10 +131,11 @@ function createRobot(startingDirection, startingCoords, startingHealth){
             let aiSurrounding = detectBarriers(this.coordinates);
             for(let i = 0; i < aiSurrounding.length; i++){
                 if(aiSurrounding[i].color === "black"){
-                    this.hp -= 1;
+                    this.hp -= aiDamage;
+                    setContent("enemyHealth", this.hp);                    
                 }
             }
-            console.log(`robot health at ${this.hp}`);
+            console.log(`robot health at ${this.hp}, aiHealth at ${aiHealth}, aiSpeed at ${aiSpeed}`);
         },
 
         forward: function (x, y){
@@ -143,19 +147,34 @@ function createRobot(startingDirection, startingCoords, startingHealth){
                 y: y
             };
 
-            // draw robot on canvas with updated coords
-            // if(this.hp < 0){
-            //     setBoard(gameArrayCopy);
-            // }
-
+            // check location of robot
+            // if robot is at location of red, lose
             if(this.coordinates.x === 10 && this.coordinates.y === 10){
                 // reload webpage when lost
-                location.reload(true);
-                alert("You lost!");                
+                this.coordinates.x = 0;
+                this.coordinates.y = 0;
+                aiHealth += 5;
+                this.hp = aiHealth;
+                playerHealth--;
+                setContent("playerHealth", playerHealth);
+            }else if(this.hp < 0){
+                this.coordinates.x = 0;
+                this.coordinates.y = 0;
+                aiHealth += 5;
+                aiSpeed -= 5;
+                this.hp = aiHealth;
             }else{
+                setContent("playerHealth", playerHealth);
                 // move and draw ai on page with updated coords
                 drawAi(this.coordinates, "blue");
                 drawLines();
+            }
+			
+			
+
+            if(playerHealth === 0){
+                alert("You Lost");
+                location.reload(true);
             }
         }
     }
@@ -193,7 +212,8 @@ function detectBarriers(aiCoords){
             
             //push all the black blocks in array
             if( isIndexInbound(xCoord) && isIndexInbound(yCoord) && 
-                gameArray[xCoord][yCoord] === "black"){
+                gameArray[xCoord][yCoord] === 
+                "black"){
                 detectBarriers.push({
                     x: xCoord,
                     y: yCoord,
@@ -340,6 +360,10 @@ function drawLines(){
         ctx.stroke();
         ctx.closePath();
     }
-
 }
+
+function setContent(id, text){
+    document.getElementById(id).innerHTML = text;
+}
+
 
